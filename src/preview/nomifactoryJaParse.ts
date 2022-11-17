@@ -1,8 +1,7 @@
 import * as fs from "fs/promises";
 import { parse, toHTML } from "minecraft-motd-util";
 
-export async function nomifactoryJaParse(path: string) {
-  const data = await fs.readFile(path, "utf-8");
+export async function nomifactoryJaParse(data: string) {
   const kvs = data
     .split("\n")
     .filter((line) => !line.startsWith("#"))
@@ -15,7 +14,7 @@ export async function nomifactoryJaParse(path: string) {
 }
 
 function parseMotd(motd: string) {
-  const converted = motd.replace(/<nl>/g, "%n").replace(/<(.).>/g, "§$1");
+  const converted = motd.replace(/<nl>/g, "%n").replace(/<(.)\1>/g, "§$1");
   const result = parse(converted);
   return toHTML(result).replace("%n", "<br>");
 }

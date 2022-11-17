@@ -16,10 +16,114 @@
   "contributes": {
     "commands": [
       {
-        "command": "nomifactory-ja-preview.helloWorld",
-        "title": "Preview NomiFactory Japanese Translation"
+        "command": "nomifactory-ja-preview.showPreview",
+        "title": "%nomifactory-ja-preview.preview.title%",
+        "category": "NomifactoryJA"
+      },
+      {
+        "command": "nomifactory-ja-preview.showPreviewToSide",
+        "title": "%nomifactory-ja-preview.previewSide.title%",
+        "category": "NomifactoryJA"
+      },
+      {
+        "command": "nomifactory-ja-preview.showLockedPreviewToSide",
+        "title": "%nomifactory-ja-preview.showLockedPreviewToSide.title%",
+        "category": "NomifactoryJA"
+      },
+      {
+        "command": "nomifactory-ja-preview.showSource",
+        "title": "%nomifactory-ja-preview.showSource.title%",
+        "category": "NomifactoryJA"
+      },
+      {
+        "command": "nomifactory-ja-preview.showPreviewSecuritySelector",
+        "title": "%nomifactory-ja-preview.showPreviewSecuritySelector.title%",
+        "category": "NomifactoryJA"
+      },
+      {
+        "command": "nomifactory-ja-preview.preview.refresh",
+        "title": "%nomifactory-ja-preview.preview.refresh.title%",
+        "category": "NomifactoryJA"
+      },
+      {
+        "command": "nomifactory-ja-preview.preview.toggleLock",
+        "title": "%nomifactory-ja-preview.preview.toggleLock.title%",
+        "category": "NomifactoryJA"
       }
-    ]
+    ],
+    "menus": {
+      "editor/title": [
+        {
+          "command": "nomifactory-ja-preview.showPreviewToSide",
+          "when": "editorLangId == minecraft-lang && !notebookEditorFocused && !hasCustomNomifactoryJAPreview",
+          "alt": "nomifactory-ja-preview.showPreview",
+          "group": "navigation"
+        },
+        {
+          "command": "nomifactory-ja-preview.showSource",
+          "when": "activeWebviewPanelId == 'nomifactory-ja-preview.preview' || activeCustomEditorId == 'vscode.nomifactory-ja-preview.preview.editor'",
+          "group": "navigation"
+        },
+        {
+          "command": "nomifactory-ja-preview.preview.refresh",
+          "when": "activeWebviewPanelId == 'nomifactory-ja-preview.preview' || activeCustomEditorId == 'vscode.nomifactory-ja-preview.preview.editor'",
+          "group": "1_NomifactoryJA"
+        },
+        {
+          "command": "nomifactory-ja-preview.preview.toggleLock",
+          "when": "activeWebviewPanelId == 'nomifactory-ja-preview.preview' || activeCustomEditorId == 'vscode.nomifactory-ja-preview.preview.editor'",
+          "group": "1_NomifactoryJA"
+        }
+      ],
+      "explorer/context": [
+        {
+          "command": "nomifactory-ja-preview.showPreview",
+          "when": "resourceLangId == nomifactory-ja-preview && !hasCustomNomifactoryJAPreview",
+          "group": "navigation"
+        }
+      ],
+      "editor/title/context": [
+        {
+          "command": "nomifactory-ja-preview.showPreview",
+          "when": "resourceLangId == nomifactory-ja-preview && !hasCustomNomifactoryJAPreview",
+          "group": "1_open"
+        }
+      ],
+      "commandPalette": [
+        {
+          "command": "nomifactory-ja-preview.showPreview",
+          "when": "editorLangId == minecraft-lang && !notebookEditorFocused",
+          "group": "navigation"
+        },
+        {
+          "command": "nomifactory-ja-preview.showPreviewToSide",
+          "when": "editorLangId == minecraft-lang && !notebookEditorFocused",
+          "group": "navigation"
+        },
+        {
+          "command": "nomifactory-ja-preview.showLockedPreviewToSide",
+          "when": "editorLangId == minecraft-lang && !notebookEditorFocused",
+          "group": "navigation"
+        },
+        {
+          "command": "nomifactory-ja-preview.showSource",
+          "when": "activeWebviewPanelId == 'nomifactory-ja-preview.preview' || activeCustomEditorId == 'vscode.nomifactory-ja-preview.preview.editor'",
+          "group": "navigation"
+        },
+        {
+          "command": "nomifactory-ja-preview.preview.toggleLock",
+          "when": "activeWebviewPanelId == 'nomifactory-ja-preview.preview' || activeCustomEditorId == 'vscode.nomifactory-ja-preview.preview.editor'"
+        },
+        {
+          "command": "nomifactory-ja-preview.preview.refresh",
+          "when": "editorLangId == minecraft-lang && !notebookEditorFocused"
+        },
+        {
+          "command": "nomifactory-ja-preview.preview.refresh",
+          "when": "activeWebviewPanelId == 'nomifactory-ja-preview.preview' || activeCustomEditorId == 'vscode.nomifactory-ja-preview.preview.editor'"
+        }
+      ]
+    }
   },
   "scripts": {
     "vscode:prepublish": "npm run package",
@@ -30,7 +134,8 @@
     "watch-tests": "tsc -p . -w --outDir out",
     "pretest": "npm run compile-tests && npm run compile && npm run lint",
     "lint": "eslint src --ext ts",
-    "test": "node ./out/test/runTest.js"
+    "test": "node ./out/test/runTest.js",
+    "build-preview": "node ./esbuild-preview"
   },
   "devDependencies": {
     "@types/glob": "^8.0.0",
@@ -40,6 +145,7 @@
     "@typescript-eslint/eslint-plugin": "^5.42.0",
     "@typescript-eslint/parser": "^5.42.0",
     "@vscode/test-electron": "^2.2.0",
+    "esbuild": "^0.15.14",
     "eslint": "^8.26.0",
     "glob": "^8.0.3",
     "mocha": "^10.1.0",
@@ -49,6 +155,7 @@
     "webpack-cli": "^4.10.0"
   },
   "dependencies": {
-    "minecraft-motd-util": "^1.1.12"
+    "minecraft-motd-util": "^1.1.12",
+    "vscode-uri": "^3.0.6"
   }
 }
