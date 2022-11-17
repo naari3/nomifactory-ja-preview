@@ -14,7 +14,16 @@
     "Other"
   ],
   "activationEvents": [
-    "*"
+    "onLanguage:minecraft-lang",
+    "onCommand:nomifactory-ja-preview.showPreview",
+    "onCommand:nomifactory-ja-preview.showPreviewToSide",
+    "onCommand:nomifactory-ja-preview.showLockedPreviewToSide",
+    "onCommand:nomifactory-ja-preview.showSource",
+    "onCommand:nomifactory-ja-preview.showPreviewSecuritySelector",
+    "onCommand:nomifactory-ja-preview.preview.refresh",
+    "onCommand:nomifactory-ja-preview.preview.toggleLock",
+    "onWebviewPanel:nomifactory-ja-preview.editor.preview",
+    "onCustomEditor:nomifactory-ja-preview.editor"
   ],
   "main": "./dist/extension.js",
   "contributes": {

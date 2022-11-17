@@ -102,7 +102,6 @@ const onUpdateView = (() => {
     if (!isNaN(line)) {
       state.line = line;
 
-      console.log("dodo", line);
       doScroll(line);
     }
   };
@@ -120,7 +119,6 @@ window.addEventListener(
 window.addEventListener(
   "message",
   async (event) => {
-    console.log({ event, type: event.data.type });
     switch (event.data.type) {
       case "onDidChangeTextEditorSelection":
         if (event.data.source === documentResource) {
@@ -129,9 +127,7 @@ window.addEventListener(
         return;
 
       case "updateView":
-        console.log({ source: event.data.source, documentResource });
         if (event.data.source === documentResource) {
-          console.log("update!");
           onUpdateView(event.data.line);
         }
         return;
@@ -190,7 +186,6 @@ window.addEventListener(
 
           // Move styles to head
           // This prevents an ugly flash of unstyled content
-          console.log({ newRoot });
           const styles = newRoot.querySelectorAll("link");
           for (const style of styles) {
             style.remove();

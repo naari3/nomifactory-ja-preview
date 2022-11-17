@@ -1,5 +1,6 @@
 import * as vscode from "vscode";
 import { LangContributionProvider } from "../langExtensions";
+import { ILogger } from "../logging";
 import { escapeAttribute } from "../util/dom";
 import { WebviewResourceProvider } from "../util/resources";
 import { Engine } from "./engine";
@@ -9,7 +10,12 @@ export interface ContentOutput {
 }
 
 export class Renderer {
-  constructor(private readonly _context: vscode.ExtensionContext, private readonly _engine: Engine, private readonly _contributionProvider: LangContributionProvider) {}
+  constructor(
+    private readonly _context: vscode.ExtensionContext,
+    private readonly _engine: Engine,
+    private readonly _contributionProvider: LangContributionProvider,
+    private readonly _logger: ILogger
+  ) {}
 
   public async renderDocument(
     document: vscode.TextDocument,
@@ -31,6 +37,8 @@ export class Renderer {
       webviewResourceRoot: resourceProvider.asWebviewUri(document.uri).toString(),
     };
 
+    this._logger.verbose("DocumentRenderer", `provideTextDocumentContent - ${document.uri}`, initialData);
+
     const body = await this.renderBody(document);
     const html = `<!DOCTYPE html>
       <html lang="ja">
@@ -38,7 +46,7 @@ export class Renderer {
 				<meta http-equiv="Content-type" content="text/html;charset=UTF-8">
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <meta id="vscode-markdown-preview-data"
+        <meta id="nomifactory-ja-preview-preview-data"
           data-settings="${escapeAttribute(JSON.stringify(initialData))}"
           data-state="${escapeAttribute(JSON.stringify(state || {}))}"
         <script src="${this._extensionResourcePath(resourceProvider, "pre.js")}"></script>
@@ -68,13 +76,11 @@ export class Renderer {
 
   private _getScripts(resourceProvider: WebviewResourceProvider): string {
     const out: string[] = [];
-    console.log("yo!");
     for (const resource of this._contributionProvider.contributions.previewScripts) {
       out.push(`<script async
 				src="${escapeAttribute(resourceProvider.asWebviewUri(resource))}"
 				charset="UTF-8"></script>`);
     }
-    console.log(out.join("\n"));
     return out.join("\n");
   }
 }

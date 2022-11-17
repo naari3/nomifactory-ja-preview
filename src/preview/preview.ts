@@ -7,6 +7,7 @@ import { getVisibleLine, LastScrollLocation, TopmostLineMonitor } from "./topmos
 import { isLanguageFile } from "../util/file";
 import { WebviewResourceProvider } from "../util/resources";
 import { LangContributionProvider } from "../langExtensions";
+import { ILogger } from "../logging";
 
 interface WebviewMessage {
   readonly source: string;
@@ -69,6 +70,7 @@ class Preview extends Disposable implements WebviewResourceProvider {
     startingScroll: StartingScrollLocation | undefined,
     private readonly _delegate: PreviewDelegate,
     private readonly _contentProvider: Renderer,
+    private readonly _logger: ILogger,
     private readonly _contributionProvider: LangContributionProvider
   ) {
     super();
@@ -112,7 +114,6 @@ class Preview extends Disposable implements WebviewResourceProvider {
     const watcher = this._register(vscode.workspace.createFileSystemWatcher(new vscode.RelativePattern(resource, "*")));
     this._register(
       watcher.onDidChange((uri) => {
-        console.log("onDidChange", uri);
         if (this.isPreviewOf(uri)) {
           // Only use the file system event when VS Code does not already know about the file
           if (!vscode.workspace.textDocuments.some((doc) => doc.uri.toString() === uri.toString())) {
@@ -184,9 +185,9 @@ class Preview extends Disposable implements WebviewResourceProvider {
       return;
     }
 
-    // this._logger.verbose("Preview", "updateForView", {
-    //   markdownFile: this._resource,
-    // });
+    this._logger.verbose("Preview", "updateForView", {
+      file: this._resource,
+    });
     this._line = topLine;
     this.postMessage({
       type: "updateView",
@@ -213,7 +214,6 @@ class Preview extends Disposable implements WebviewResourceProvider {
   }
 
   private async _updatePreview(forceUpdate?: boolean): Promise<void> {
-    console.log("updatePreview", forceUpdate);
     clearTimeout(this._throttleTimer);
     this._throttleTimer = undefined;
 
@@ -389,11 +389,11 @@ export class StaticPreview extends Disposable implements IManagedPreview {
     webview: vscode.WebviewPanel,
     contentProvider: Renderer,
     topmostLineMonitor: TopmostLineMonitor,
-    // logger: ILogger,
+    logger: ILogger,
     contributionProvider: LangContributionProvider,
     scrollLine?: number
   ): StaticPreview {
-    return new StaticPreview(webview, resource, contentProvider, topmostLineMonitor, contributionProvider, scrollLine);
+    return new StaticPreview(webview, resource, contentProvider, topmostLineMonitor, logger, contributionProvider, scrollLine);
   }
 
   private readonly _preview: Preview;
@@ -404,7 +404,7 @@ export class StaticPreview extends Disposable implements IManagedPreview {
     contentProvider: Renderer,
     // private readonly _previewConfigurations: PreviewConfigurationManager,
     topmostLineMonitor: TopmostLineMonitor,
-    // logger: ILogger,
+    logger: ILogger,
     contributionProvider: LangContributionProvider,
     // opener: MdLinkOpener,
     scrollLine?: number
@@ -432,6 +432,7 @@ export class StaticPreview extends Disposable implements IManagedPreview {
           },
         },
         contentProvider,
+        logger,
         contributionProvider
       )
     );
@@ -518,14 +519,14 @@ export class DynamicPreview extends Disposable implements IManagedPreview {
     webview: vscode.WebviewPanel,
     contentProvider: Renderer,
     // previewConfigurations: PreviewConfigurationManager,
-    // logger: ILogger,
+    logger: ILogger,
     topmostLineMonitor: TopmostLineMonitor,
     contributionProvider: LangContributionProvider
     // opener: MdLinkOpener
   ): DynamicPreview {
     // webview.iconPath = contentProvider.iconPath;
 
-    return new DynamicPreview(webview, input, contentProvider, topmostLineMonitor, contributionProvider);
+    return new DynamicPreview(webview, input, contentProvider, logger, topmostLineMonitor, contributionProvider);
   }
 
   public static create(
@@ -533,7 +534,7 @@ export class DynamicPreview extends Disposable implements IManagedPreview {
     previewColumn: vscode.ViewColumn,
     contentProvider: Renderer,
     // previewConfigurations: PreviewConfigurationManager,
-    // logger: ILogger,
+    logger: ILogger,
     topmostLineMonitor: TopmostLineMonitor,
     contributionProvider: LangContributionProvider
     // opener: MdLinkOpener
@@ -544,7 +545,7 @@ export class DynamicPreview extends Disposable implements IManagedPreview {
 
     // webview.iconPath = contentProvider.iconPath;
 
-    return new DynamicPreview(webview, input, contentProvider, topmostLineMonitor, contributionProvider);
+    return new DynamicPreview(webview, input, contentProvider, logger, topmostLineMonitor, contributionProvider);
   }
 
   private constructor(
@@ -552,7 +553,7 @@ export class DynamicPreview extends Disposable implements IManagedPreview {
     input: DynamicPreviewInput,
     private readonly _contentProvider: Renderer,
     // private readonly _previewConfigurations: PreviewConfigurationManager,
-    // private readonly _logger: ILogger,
+    private readonly _logger: ILogger,
     private readonly _topmostLineMonitor: TopmostLineMonitor,
     private readonly _contributionProvider: LangContributionProvider // private readonly _opener: MdLinkOpener
   ) {
@@ -720,7 +721,7 @@ export class DynamicPreview extends Disposable implements IManagedPreview {
       },
       this._contentProvider,
       // this._previewConfigurations,
-      // this._logger,
+      this._logger,
       this._contributionProvider
       // this._opener
     );

@@ -116,9 +116,7 @@ class VSCodeExtensionLangContributionProvider extends Disposable implements Lang
     this._register(
       vscode.extensions.onDidChange(() => {
         const currentContributions = this._getCurrentContributions();
-        console.log({ currentContributions });
         const existingContributions = this._contributions || LangContributions.Empty;
-        console.log({ existingContributions });
         if (!LangContributions.equal(existingContributions, currentContributions)) {
           this._contributions = currentContributions;
           this._onContributionsChanged.fire(this);
@@ -140,7 +138,6 @@ class VSCodeExtensionLangContributionProvider extends Disposable implements Lang
   }
 
   private _getCurrentContributions(): LangContributions {
-    console.log(vscode.extensions.all.map(LangContributions.fromExtension));
     return vscode.extensions.all.map(LangContributions.fromExtension).reduce(LangContributions.merge, LangContributions.Empty);
   }
 }

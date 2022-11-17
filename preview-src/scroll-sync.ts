@@ -112,7 +112,6 @@ function getElementBounds({ element }: CodeLineElement): { top: number; height: 
  * Attempt to reveal the element for a source line in the editor.
  */
 export function scrollToRevealSourceLine(line: number, documentVersion: number, settingsManager: SettingsManager) {
-  console.log(settingsManager);
   if (!settingsManager.settings?.scrollPreviewWithEditor) {
     return;
   }

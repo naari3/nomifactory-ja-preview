@@ -6,6 +6,7 @@ import { DynamicPreview, IManagedPreview, StaticPreview } from "./preview";
 import { Renderer } from "./renderer";
 import { scrollEditorToLine, StartingScrollFragment } from "./scrolling";
 import { LangContributionProvider } from "../langExtensions";
+import { ILogger } from "../logging";
 
 export interface DynamicPreviewSettings {
   readonly resourceColumn: vscode.ViewColumn;
@@ -69,8 +70,9 @@ export class PreviewManager extends Disposable implements vscode.WebviewPanelSer
   private _activePreview: IManagedPreview | undefined = undefined;
 
   public constructor(
-    private readonly _contentProvider: Renderer, // private readonly _logger: ILogger,
-    private readonly _contributions: LangContributionProvider // private readonly _opener: MdLinkOpener
+    private readonly _contentProvider: Renderer,
+    private readonly _contributions: LangContributionProvider, // private readonly _opener: MdLinkOpener
+    private readonly _logger: ILogger
   ) {
     super();
 
@@ -147,7 +149,6 @@ export class PreviewManager extends Disposable implements vscode.WebviewPanelSer
   }
 
   public async deserializeWebviewPanel(webview: vscode.WebviewPanel, state: any): Promise<void> {
-    console.log(state);
     try {
       const resource = vscode.Uri.parse(state.resource);
       const locked = state.locked;
@@ -159,7 +160,7 @@ export class PreviewManager extends Disposable implements vscode.WebviewPanelSer
         webview,
         this._contentProvider,
         // this._previewConfigurations,
-        // this._logger,
+        this._logger,
         this._topmostLineMonitor,
         this._contributions
         // this._opener
@@ -211,7 +212,7 @@ export class PreviewManager extends Disposable implements vscode.WebviewPanelSer
       this._contentProvider,
       // this._previewConfigurations,
       this._topmostLineMonitor,
-      // this._logger,
+      this._logger,
       this._contributions,
       // this._opener,
       lineNumber
@@ -232,7 +233,7 @@ export class PreviewManager extends Disposable implements vscode.WebviewPanelSer
       previewSettings.previewColumn,
       this._contentProvider,
       // this._previewConfigurations,
-      // this._logger,
+      this._logger,
       this._topmostLineMonitor,
       this._contributions
       // this._opener

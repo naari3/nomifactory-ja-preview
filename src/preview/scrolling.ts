@@ -18,7 +18,6 @@ function toRevealRange(line: number, editor: vscode.TextEditor): vscode.Range {
   }
 
   const fraction = line - sourceLine;
-  console.log(sourceLine, fraction);
   const text = editor.document.lineAt(sourceLine).text;
   const start = Math.floor(fraction * text.length);
   return new vscode.Range(sourceLine, start, sourceLine + 1, 0);

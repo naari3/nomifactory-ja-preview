@@ -1,10 +1,11 @@
 import * as vscode from "vscode";
+import { ILogger } from "../logging";
 import { ITextDocument } from "../types/textDocument";
 import { nomifactoryJaParse } from "./nomifactoryJaParse";
 import { ContentOutput } from "./renderer";
 
 export class Engine {
-  public constructor() {}
+  public constructor(private readonly _logger: ILogger) {}
 
   public async render(input: ITextDocument | string): Promise<ContentOutput> {
     const text = typeof input === "string" ? input : input.getText();

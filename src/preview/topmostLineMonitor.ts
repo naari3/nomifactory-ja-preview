@@ -30,7 +30,6 @@ export class TopmostLineMonitor extends Disposable {
         if (isLanguageFile(event.textEditor.document)) {
           const line = getVisibleLine(event.textEditor);
           if (typeof line === "number") {
-            console.log({ line });
             this.updateLine(event.textEditor.document.uri, line);
             this.setPreviousTextEditorLine({
               uri: event.textEditor.document.uri,
