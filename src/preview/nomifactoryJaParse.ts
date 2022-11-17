@@ -37,5 +37,5 @@ export async function nomifactoryJaParse(data: string) {
 function parseMotd(motd: string) {
   const converted = motd.replace(/<nl>/g, "%n").replace(/<(.)\1>/g, "§$1");
   const result = parse(converted);
-  return toHTML(result).replace("%n", "<br>");
+  return toHTML(result).replaceAll("%n", "<br>");
 }
