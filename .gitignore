@@ -3,3 +3,6 @@ dist
 node_modules
 .vscode-test/
 *.vsix
+preview-src/*.js
+preview-src/*.js.map
+media/*.js

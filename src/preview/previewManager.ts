@@ -5,6 +5,7 @@ import { TopmostLineMonitor } from "./topmostLineMonitor";
 import { DynamicPreview, IManagedPreview, StaticPreview } from "./preview";
 import { Renderer } from "./renderer";
 import { scrollEditorToLine, StartingScrollFragment } from "./scrolling";
+import { LangContributionProvider } from "../langExtensions";
 
 export interface DynamicPreviewSettings {
   readonly resourceColumn: vscode.ViewColumn;
@@ -68,7 +69,8 @@ export class PreviewManager extends Disposable implements vscode.WebviewPanelSer
   private _activePreview: IManagedPreview | undefined = undefined;
 
   public constructor(
-    private readonly _contentProvider: Renderer // private readonly _logger: ILogger, // private readonly _contributions: MarkdownContributionProvider, // private readonly _opener: MdLinkOpener
+    private readonly _contentProvider: Renderer, // private readonly _logger: ILogger,
+    private readonly _contributions: LangContributionProvider // private readonly _opener: MdLinkOpener
   ) {
     super();
 
@@ -158,8 +160,8 @@ export class PreviewManager extends Disposable implements vscode.WebviewPanelSer
         this._contentProvider,
         // this._previewConfigurations,
         // this._logger,
-        this._topmostLineMonitor
-        // this._contributions,
+        this._topmostLineMonitor,
+        this._contributions
         // this._opener
       );
 
@@ -210,7 +212,7 @@ export class PreviewManager extends Disposable implements vscode.WebviewPanelSer
       // this._previewConfigurations,
       this._topmostLineMonitor,
       // this._logger,
-      // this._contributions,
+      this._contributions,
       // this._opener,
       lineNumber
     );
@@ -231,8 +233,8 @@ export class PreviewManager extends Disposable implements vscode.WebviewPanelSer
       this._contentProvider,
       // this._previewConfigurations,
       // this._logger,
-      this._topmostLineMonitor
-      // this._contributions,
+      this._topmostLineMonitor,
+      this._contributions
       // this._opener
     );
 

@@ -5,6 +5,8 @@ import { scrollEditorToLine, StartingScrollFragment, StartingScrollLine, Startin
 import { Renderer } from "./renderer";
 import { getVisibleLine, LastScrollLocation, TopmostLineMonitor } from "./topmostLineMonitor";
 import { isLanguageFile } from "../util/file";
+import { WebviewResourceProvider } from "../util/resources";
+import { LangContributionProvider } from "../langExtensions";
 
 interface WebviewMessage {
   readonly source: string;
@@ -44,7 +46,7 @@ interface PreviewDelegate {
   openPreviewLinkToFile(link: vscode.Uri, fragment: string): void;
 }
 
-class Preview extends Disposable {
+class Preview extends Disposable implements WebviewResourceProvider {
   private _disposed = false;
   private readonly _delay = 300;
   private _throttleTimer: any;
@@ -66,7 +68,8 @@ class Preview extends Disposable {
     resource: vscode.Uri,
     startingScroll: StartingScrollLocation | undefined,
     private readonly _delegate: PreviewDelegate,
-    private readonly _contentProvider: Renderer
+    private readonly _contentProvider: Renderer,
+    private readonly _contributionProvider: LangContributionProvider
   ) {
     super();
     this._webviewPanel = webview;
@@ -83,6 +86,12 @@ class Preview extends Disposable {
         this._scrollToFragment = startingScroll.fragment;
         break;
     }
+
+    this._register(
+      _contributionProvider.onContributionsChanged(() => {
+        setTimeout(() => this.refresh(), 0);
+      })
+    );
 
     this._register(
       vscode.workspace.onDidChangeTextDocument((event) => {
@@ -246,7 +255,7 @@ class Preview extends Disposable {
       }
     }
 
-    const content = await this._contentProvider.renderDocument(document, this._webviewPanel);
+    const content = await this._contentProvider.renderDocument(document, this, this._line, selectedLine, this.state);
 
     this._updateWebviewContent(content.html, shouldReloadPage);
   }
@@ -259,7 +268,7 @@ class Preview extends Disposable {
     if (this._delegate.getTitle) {
       this._webviewPanel.title = this._delegate.getTitle(this._resource);
     }
-    // this._webviewPanel.webview.options = this._getWebviewOptions();
+    this._webviewPanel.webview.options = this._getWebviewOptions();
 
     if (reloadPage) {
       this._webviewPanel.webview.html = html;
@@ -270,6 +279,30 @@ class Preview extends Disposable {
         source: this._resource.toString(),
       });
     }
+  }
+
+  private _getWebviewOptions(): vscode.WebviewOptions {
+    return {
+      enableScripts: true,
+      enableForms: false,
+      localResourceRoots: this._getLocalResourceRoots(),
+    };
+  }
+
+  private _getLocalResourceRoots(): ReadonlyArray<vscode.Uri> {
+    const baseRoots = Array.from(this._contributionProvider.contributions.previewResourceRoots);
+
+    const folder = vscode.workspace.getWorkspaceFolder(this._resource);
+    if (folder) {
+      const workspaceRoots = vscode.workspace.workspaceFolders?.map((folder) => folder.uri);
+      if (workspaceRoots) {
+        baseRoots.push(...workspaceRoots);
+      }
+    } else {
+      baseRoots.push(uri.Utils.dirname(this._resource));
+    }
+
+    return baseRoots;
   }
 
   private _onDidScrollPreview(line: number) {
@@ -323,6 +356,14 @@ class Preview extends Disposable {
         }
       );
   }
+
+  asWebviewUri(resource: vscode.Uri) {
+    return this._webviewPanel.webview.asWebviewUri(resource);
+  }
+
+  get cspSource() {
+    return this._webviewPanel.webview.cspSource;
+  }
 }
 
 export interface IManagedPreview {
@@ -349,10 +390,10 @@ export class StaticPreview extends Disposable implements IManagedPreview {
     contentProvider: Renderer,
     topmostLineMonitor: TopmostLineMonitor,
     // logger: ILogger,
-    // contributionProvider: MarkdownContributionProvider,
+    contributionProvider: LangContributionProvider,
     scrollLine?: number
   ): StaticPreview {
-    return new StaticPreview(webview, resource, contentProvider, topmostLineMonitor, scrollLine);
+    return new StaticPreview(webview, resource, contentProvider, topmostLineMonitor, contributionProvider, scrollLine);
   }
 
   private readonly _preview: Preview;
@@ -364,7 +405,7 @@ export class StaticPreview extends Disposable implements IManagedPreview {
     // private readonly _previewConfigurations: PreviewConfigurationManager,
     topmostLineMonitor: TopmostLineMonitor,
     // logger: ILogger,
-    // contributionProvider: MarkdownContributionProvider,
+    contributionProvider: LangContributionProvider,
     // opener: MdLinkOpener,
     scrollLine?: number
   ) {
@@ -390,7 +431,8 @@ export class StaticPreview extends Disposable implements IManagedPreview {
             );
           },
         },
-        contentProvider
+        contentProvider,
+        contributionProvider
       )
     );
 
@@ -477,13 +519,13 @@ export class DynamicPreview extends Disposable implements IManagedPreview {
     contentProvider: Renderer,
     // previewConfigurations: PreviewConfigurationManager,
     // logger: ILogger,
-    topmostLineMonitor: TopmostLineMonitor
-    // contributionProvider: MarkdownContributionProvider,
+    topmostLineMonitor: TopmostLineMonitor,
+    contributionProvider: LangContributionProvider
     // opener: MdLinkOpener
   ): DynamicPreview {
     // webview.iconPath = contentProvider.iconPath;
 
-    return new DynamicPreview(webview, input, contentProvider, topmostLineMonitor);
+    return new DynamicPreview(webview, input, contentProvider, topmostLineMonitor, contributionProvider);
   }
 
   public static create(
@@ -492,8 +534,8 @@ export class DynamicPreview extends Disposable implements IManagedPreview {
     contentProvider: Renderer,
     // previewConfigurations: PreviewConfigurationManager,
     // logger: ILogger,
-    topmostLineMonitor: TopmostLineMonitor
-    // contributionProvider: MarkdownContributionProvider,
+    topmostLineMonitor: TopmostLineMonitor,
+    contributionProvider: LangContributionProvider
     // opener: MdLinkOpener
   ): DynamicPreview {
     const webview = vscode.window.createWebviewPanel(DynamicPreview.viewType, DynamicPreview._getPreviewTitle(input.resource, input.locked), previewColumn, {
@@ -502,7 +544,7 @@ export class DynamicPreview extends Disposable implements IManagedPreview {
 
     // webview.iconPath = contentProvider.iconPath;
 
-    return new DynamicPreview(webview, input, contentProvider, topmostLineMonitor);
+    return new DynamicPreview(webview, input, contentProvider, topmostLineMonitor, contributionProvider);
   }
 
   private constructor(
@@ -511,7 +553,8 @@ export class DynamicPreview extends Disposable implements IManagedPreview {
     private readonly _contentProvider: Renderer,
     // private readonly _previewConfigurations: PreviewConfigurationManager,
     // private readonly _logger: ILogger,
-    private readonly _topmostLineMonitor: TopmostLineMonitor // private readonly _contributionProvider: MarkdownContributionProvider, // private readonly _opener: MdLinkOpener
+    private readonly _topmostLineMonitor: TopmostLineMonitor,
+    private readonly _contributionProvider: LangContributionProvider // private readonly _opener: MdLinkOpener
   ) {
     super();
 
@@ -675,10 +718,10 @@ export class DynamicPreview extends Disposable implements IManagedPreview {
           this.update(link, fragment ? new StartingScrollFragment(fragment) : undefined);
         },
       },
-      this._contentProvider
+      this._contentProvider,
       // this._previewConfigurations,
       // this._logger,
-      // this._contributionProvider,
+      this._contributionProvider
       // this._opener
     );
   }

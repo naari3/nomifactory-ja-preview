@@ -8,11 +8,6 @@ export interface LastScrollLocation {
   readonly uri: vscode.Uri;
 }
 
-export interface LastScrollLocation {
-  readonly line: number;
-  readonly uri: vscode.Uri;
-}
-
 export class TopmostLineMonitor extends Disposable {
   private readonly _pendingUpdates = new ResourceMap<number>();
   private readonly _throttle = 50;
@@ -32,10 +27,10 @@ export class TopmostLineMonitor extends Disposable {
 
     this._register(
       vscode.window.onDidChangeTextEditorVisibleRanges((event) => {
-        console.log("onDidChangeTextEditorVisibleRanges", event);
         if (isLanguageFile(event.textEditor.document)) {
           const line = getVisibleLine(event.textEditor);
           if (typeof line === "number") {
+            console.log({ line });
             this.updateLine(event.textEditor.document.uri, line);
             this.setPreviousTextEditorLine({
               uri: event.textEditor.document.uri,

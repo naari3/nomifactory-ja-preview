@@ -9,12 +9,16 @@ export function scrollEditorToLine(line: number, editor: vscode.TextEditor) {
 }
 
 function toRevealRange(line: number, editor: vscode.TextEditor): vscode.Range {
+  // if (line < 0) {
+  //   line = 0;
+  // }
   const sourceLine = Math.floor(line);
   if (sourceLine >= editor.document.lineCount) {
     return new vscode.Range(editor.document.lineCount - 1, 0, editor.document.lineCount - 1, 0);
   }
 
   const fraction = line - sourceLine;
+  console.log(sourceLine, fraction);
   const text = editor.document.lineAt(sourceLine).text;
   const start = Math.floor(fraction * text.length);
   return new vscode.Range(sourceLine, start, sourceLine + 1, 0);

@@ -11,7 +11,10 @@ export class Engine {
     const results = await nomifactoryJaParse(text);
 
     const body = `${Array.from(results)
-      .map(([key, value]) => `<h2 id="${key}">${key}</h2><p>${value}</p>`)
+      .map(
+        (line) =>
+          `<h2 class="code-line" data-line="${line.index}" dir="auto" id="${line.key}">${line.key}</h2><p class="code-line" data-line="${line.index}" dir="auto">${line.value}</p>`
+      )
       .join("")}`;
     return { html: body };
   }
