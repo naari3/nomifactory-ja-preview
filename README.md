@@ -1,5 +1,9 @@
 # nomifactory-ja-preview
 
+![ss](./nomifactory-ja-preview-screenshot.png)
+
+for [naari3/nomifactory-ja](https://github.com/naari3/nomifactory-ja)
+
 ## Features
 
 - Preview
