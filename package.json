@@ -5,7 +5,7 @@
   "version": "0.0.2",
   "repository": {
     "type": "git",
-    "url": "https://github.com/naari3/nomifactory-ja-preview.git"
+    "url": "https://github.com/nomifactory-ja/nomifactory-ja-preview.git"
   },
   "engines": {
     "vscode": "^1.73.0"

@@ -2,7 +2,7 @@
 
 ![ss](./nomifactory-ja-preview-screenshot.png)
 
-for [naari3/nomifactory-ja](https://github.com/naari3/nomifactory-ja)
+for [nomifactory-ja/nomifactory-ja](https://github.com/nomifactory-ja/nomifactory-ja)
 
 ## Features
 
